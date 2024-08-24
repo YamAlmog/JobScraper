@@ -7,6 +7,8 @@ from models import Position
 from base_scraper import BaseScraper
 from dotenv import load_dotenv
 import os
+import time
+
 
 load_dotenv(".env")
 driver_path = os.getenv("CHROME_DRIVER_PATH")
@@ -15,8 +17,9 @@ driver_path = os.getenv("CHROME_DRIVER_PATH")
 CAREERS_URL = 'https://www.google.com/about/careers/applications/'
 TITLE_FIELD_ID = 'i6'
 LOCATION_FIELD_ID = 'c4'
-POSITIONS_XPATH = '//*[@id="yDmH0d"]/c-wiz[1]/div/div[2]/div/div/div[2]'
+POSITIONS_XPATH = '/html/body/c-wiz[1]/div/div[2]/div/div/div[2]/main/div/c-wiz/div/ul'
 CLICK_SEARCH_BUTTON = '//*[@id="hero-section"]/div[1]/div[1]/div[1]/form/div[1]/div[3]/button'
+
 
 class GoogleScraper(BaseScraper):
     def __init__(self) -> None:    
@@ -37,20 +40,36 @@ class GoogleScraper(BaseScraper):
                 EC.presence_of_element_located((By.ID, LOCATION_FIELD_ID))
             )
             location_search_field_elem.send_keys(location)
+
+            time.sleep(1)
             
+            WebDriverWait(self.driver, 10).until(
+                EC.element_to_be_clickable((By.XPATH, '//*[@id="c10"]/span[3]'))
+            ).click()
+
             # Click the search button
             click_search_field_elem = WebDriverWait(self.driver, 10).until(
                 EC.element_to_be_clickable((By.XPATH, CLICK_SEARCH_BUTTON))
             )
+
+
             click_search_field_elem.click()
+
+            time.sleep(1)
 
             # Retrieve all positions
             list_of_positions = []
-            all_positions = WebDriverWait(self.driver, 10).until(
-                EC.presence_of_all_elements_located((By.XPATH, POSITIONS_XPATH))
-            )
-            print(f"Number of positions: {len(all_positions)}")
-            for position in all_positions:
+            # all_positions = WebDriverWait(self.driver, 10).until(
+            #     EC.presence_of_all_elements_located((By.XPATH, POSITIONS_XPATH))
+            # )
+            all_positions_element = self.driver.find_element(By.XPATH, POSITIONS_XPATH)
+            positions = all_positions_element.find_elements(By.XPATH, './*')
+
+            for position in positions:
+
+                # print(f"-------------------------------\n {position.text} \n-------------------------------")
+                print('Location: ' + position.find_element(By.CLASS_NAME, 'r0wTof ').text)
+                continue
                 
                 title_elem = position.find_element(By.XPATH, '//*[@id="yDmH0d"]/c-wiz[1]/div/div[2]/div/div/div[2]/main/div/c-wiz/div/ul/li[3]/div/div/div[1]/div/div[1]/div')
                 pos_title = title_elem.text
@@ -70,4 +89,4 @@ class GoogleScraper(BaseScraper):
 
 
 google_scraper = GoogleScraper()
-google_scraper.retriev_positions(CAREERS_URL, 'software engineer', 'israel')
+google_scraper.retriev_positions(CAREERS_URL, 'software engineer', 'Israel')
