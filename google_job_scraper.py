@@ -26,10 +26,10 @@ class GoogleScraper(BaseScraper):
         super().__init__(driver_path)
 
 
-    def retriev_positions(self, url, title_to_search, location):
+    def retrieve_positions(self, title_to_search, location):
         try:
             self.driver.maximize_window()
-            self.driver.get(url)
+            self.driver.get(CAREERS_URL)
             
             # Wait until the title field is present
             title_search_field_elem = WebDriverWait(self.driver, 10).until(
@@ -77,10 +77,10 @@ class GoogleScraper(BaseScraper):
             description_element = position.find_element(By.CLASS_NAME, 'Xsxa1e')
             pos_description = description_element.text
             
-            position = Position(title=pos_title, location=pos_location, link=job_link, description=pos_description)
+            position = Position(company="Google", title=pos_title, location=pos_location, link=job_link, description=pos_description)
             list_of_positions.append(position)
         
         return list_of_positions    
 
 google_scraper = GoogleScraper()
-print(google_scraper.retriev_positions(CAREERS_URL, 'Junior Software Engineer', 'Israel'))
+print(google_scraper.retrieve_positions('Junior Software Engineer', 'Israel'))
