@@ -37,7 +37,10 @@ class MicrosoftScraper(BaseScraper):
 
         except Exception as e:
             print(f"An error occurred: {e}")
-
+            return []
+        
+        finally:
+            self.driver.quit()
 
     def create_positions_list(self, positions):
         list_of_positions = []
@@ -58,9 +61,6 @@ class MicrosoftScraper(BaseScraper):
             # Get job description
             description_elem = WebDriverWait(self.driver, 20).until(EC.presence_of_element_located((By.CLASS_NAME, 'css-537')))
             pos_description = description_elem.text
-            
-            # Print or store the title, location, date, and description
-            print(f"Title: {pos_title}, Location: {pos_location}, Posted: {pos_date}, Description: {pos_description}")
             
             # Store position data
             position_data = Position(company="Microsoft", title=pos_title, location=pos_location, posted_date=pos_date, description=pos_description)

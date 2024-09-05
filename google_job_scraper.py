@@ -14,11 +14,9 @@ load_dotenv(".env")
 driver_path = os.getenv("CHROME_DRIVER_PATH")
 
 # Google careers params
-CAREERS_URL = 'https://www.google.com/about/careers/applications/'
-TITLE_FIELD_ID = 'i6'
-LOCATION_FIELD_ID = 'c4'
+CAREERS_URL = "https://www.google.com/about/careers/applications/jobs/results?location=Israel&q=junior%20software%20engineer&target_level=INTERN_AND_APPRENTICE&target_level=EARLY&sort_by=date"
+
 POSITIONS_XPATH = '/html/body/c-wiz[1]/div/div[2]/div/div/div[2]/main/div/c-wiz/div/ul'
-CLICK_SEARCH_BUTTON = '//*[@id="hero-section"]/div[1]/div[1]/div[1]/form/div[1]/div[3]/button'
 
 
 class GoogleScraper(BaseScraper):
@@ -26,30 +24,10 @@ class GoogleScraper(BaseScraper):
         super().__init__(driver_path)
 
 
-    def retrieve_positions(self, title_to_search, location):
+    def retrieve_positions(self):
         try:
             self.driver.maximize_window()
             self.driver.get(CAREERS_URL)
-            
-            # Wait until the title field is present
-            title_search_field_elem = WebDriverWait(self.driver, 10).until(
-                EC.presence_of_element_located((By.ID, TITLE_FIELD_ID)))
-            title_search_field_elem.send_keys(title_to_search)
-            time.sleep(1)
-
-            # Wait until the location field is present
-            location_search_field_elem = WebDriverWait(self.driver, 10).until(
-                EC.presence_of_element_located((By.ID, LOCATION_FIELD_ID)))
-            location_search_field_elem.send_keys(location)
-            
-            WebDriverWait(self.driver, 10).until(
-                EC.element_to_be_clickable((By.XPATH, '//*[@id="c10"]/span[3]'))).click()
-
-            # Click the search button
-            click_search_field_elem = WebDriverWait(self.driver, 10).until(
-                EC.element_to_be_clickable((By.XPATH, CLICK_SEARCH_BUTTON)))
-            click_search_field_elem.click()
-
             time.sleep(1)
 
             # return all positions list
@@ -57,6 +35,10 @@ class GoogleScraper(BaseScraper):
 
         except Exception as e:
             print(f"An error occurred: {e}")
+            return []
+
+        finally:
+            self.driver.quit()
 
 
     def create_positions_list(self):
@@ -83,4 +65,4 @@ class GoogleScraper(BaseScraper):
         return list_of_positions    
 
 google_scraper = GoogleScraper()
-print(google_scraper.retrieve_positions('Junior Software Engineer', 'Israel'))
+print(google_scraper.retrieve_positions())

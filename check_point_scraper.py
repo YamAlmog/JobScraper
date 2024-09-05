@@ -46,10 +46,11 @@ class CheckPointScraper(BaseScraper):
 
         except Exception as e:
             print(f"An error occurred: {e}")
+            return []
         
-        input("Press Enter to close the browser...")
-        self.driver.quit()
-
+        finally:
+            self.driver.quit()
+        
     def create_positions_list(self, positions):
         list_of_positions = []
         
@@ -64,9 +65,6 @@ class CheckPointScraper(BaseScraper):
              
             # Get link
             job_link = position.find_element(By.TAG_NAME, "a").get_attribute("href")
-            
-            # Print or store the title, location, date, and description
-            print(f"Title: {pos_title}, Location: {pos_location}")
             
             # Store position data
             position_data = Position(company="Check Point", title=pos_title, location=pos_location, link=job_link)

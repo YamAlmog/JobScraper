@@ -13,7 +13,7 @@ load_dotenv(".env")
 driver_path = os.getenv("CHROME_DRIVER_PATH")
 
 
-CAREERS_URL = "https://www.nice.com/careers/apply?locations=32&categories=24"
+CAREERS_URL = "https://www.nice.com/careers/apply?categories=27&search=student&locations=30"
 
 class NiceScraper(BaseScraper):
     def __init__(self) -> None:    
@@ -30,16 +30,22 @@ class NiceScraper(BaseScraper):
             # Wait until the positions are loaded on the page
             WebDriverWait(self.driver, 10).until(EC.presence_of_element_located((By.CLASS_NAME, 'tab-content')))
 
-            # Find all position elements
-            positions = WebDriverWait(self.driver, 10).until(EC.presence_of_all_elements_located((By.CLASS_NAME, 'result-item')))
+            # Check if there are any available positions
+            result_count_elem = self.driver.find_element(By.ID, "results")
+            positions = result_count_elem.find_elements(By.CLASS_NAME, 'result-item')
+
+            if not positions:
+                print("No positions found.")
+                return []
             
             return self.create_positions_list(positions)
 
         except Exception as e:
             print(f"An error occurred: {e}")
-        
-        input("Press Enter to close the browser...")
-        self.driver.quit()
+            return []
+
+        finally:
+            self.driver.quit()
 
     def create_positions_list(self, positions):
         list_of_positions = []
@@ -53,12 +59,8 @@ class NiceScraper(BaseScraper):
             location_elem = position.find_element(By.TAG_NAME, 'p')
             pos_location = location_elem.text
             
-            
             # Get link
             job_link = position.get_attribute('href')
-            
-            # Print or store the title, location, date, and description
-            print(f"Title: {pos_title}, Location: {pos_location}")
             
             # Store position data
             position_data = Position(company="Nice", title=pos_title, location=pos_location, link=job_link)
